@@ -1,6 +1,10 @@
 <resources>
-    <string name="app_name">BeginnersLection14</string>
+    <string name="app_name">Lection 14</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="validate_first">Validate first field</string>
+    <string name="validate_all">Validate all fields</string>
+    <string name="edit">Edit</string>
+    <string name="save">Save</string>
+    <string name="dialog">Dialog</string>
+    <string name="orientation">orientation variants</string>
 </resources>

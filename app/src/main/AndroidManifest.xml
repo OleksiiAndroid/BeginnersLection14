@@ -15,6 +15,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".Orientation1Activity" />
+        <activity android:name=".Orientation2Activity" />
+        <activity android:name=".Orientation3Activity" />
     </application>
 
 </manifest>

@@ -1,169 +1,126 @@
 package ua.com.webacademy.beginnerslection14;
 
-import android.app.LoaderManager;
-import android.app.ProgressDialog;
-import android.content.Loader;
-import android.os.AsyncTask;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v7.app.AppCompatActivity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import java.util.ArrayList;
-import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<ArrayList<Student>> {
+public class MainActivity extends AppCompatActivity {
 
-    private ProgressDialog mDialog;
-
-    private SaveTask mSaveTask;
+    private RequiredEditText requiredEditText;
+    private MyButton myButton;
+    private MyButton myButton2;
+    private MyButton myButton3;
+    StudentView studentView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        getStudents(false);
-    }
+        requiredEditText = findViewById(R.id.requiredEditText);
+        myButton = findViewById(R.id.view3);
+        myButton2 = findViewById(R.id.view4);
+        myButton3 = findViewById(R.id.view5);
+        studentView = findViewById(R.id.view6);
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
+        myButton.setOnClickListener(new MyButton.ClickInterface() {
+            @Override
+            public void onClick() {
+                Student student = new Student("Ivanov", "Ivan", 22);
+                studentView.setStudent(student);
+            }
+        });
 
-        if (mSaveTask != null) {
-            mSaveTask.cancel(true);
-        }
-    }
+        myButton2.setOnClickListener(new MyButton.ClickInterface() {
+            @Override
+            public void onClick() {
+                if (studentView.validate()) {
+                    Student student = studentView.getStudent();
+                    Toast.makeText(MainActivity.this, student.FirstName, Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
 
-    private void getStudents(boolean restart) {
-        mDialog = new ProgressDialog(this);
-        mDialog.setMessage("Wait...");
-        mDialog.setCancelable(false);
-        mDialog.show();
+        myButton3.setOnClickListener(new MyButton.ClickInterface() {
+            @Override
+            public void onClick() {
+                Student student = new Student("Ivanov", "Ivan", 22);
 
-        if (restart) {
-            getLoaderManager().restartLoader(0, null, this);
-        } else {
-            getLoaderManager().initLoader(0, null, this);
-        }
+                StudentDialog dialog = StudentDialog.newInstance(student);
+                dialog.setOnOkClickListener(new StudentDialog.StudentDialogInterface() {
+                    @Override
+                    public void onOkClick(Student student) {
+                        Toast.makeText(MainActivity.this, student.FirstName, Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+                dialog.show(getFragmentManager(), "dialog");
+            }
+        });
     }
 
     public void OnClick(View v) {
         switch (v.getId()) {
-            case R.id.buttonAdd:
-                editStudent(new Student());
+            case R.id.button:
+                requiredEditText.validate();
+
+                if (requiredEditText.validate()) {
+                    Toast.makeText(MainActivity.this, requiredEditText.getText(), Toast.LENGTH_SHORT).show();
+                }
+                break;
+            case R.id.button2:
+                validate();
+                break;
+            case R.id.buttonOrientation1:
+                startActivity(new Intent(this, Orientation1Activity.class));
+                break;
+            case R.id.buttonOrientation2:
+                startActivity(new Intent(this, Orientation1Activity.class));
+                break;
+            case R.id.buttonOrientation3:
+                startActivity(new Intent(this, Orientation1Activity.class));
                 break;
         }
     }
 
-    private void editStudent(Student student) {
-        final AddEditStudentFragment fragment = AddEditStudentFragment.newInstance(student);
+    public boolean validate() {
+        ViewGroup rootView = findViewById(android.R.id.content);
+        ArrayList<RequiredEditText> requiredViews = getViewsForvalidate(rootView);
+        boolean result = true;
 
-        fragment.setStudentListener(new AddEditStudentFragment.StudentListener() {
-            @Override
-            public void save(Student student) {
-                saveStudent(student);
-            }
+        for (int i = 0; i < requiredViews.size(); i++) {
+            RequiredEditText view = requiredViews.get(i);
 
-            @Override
-            public void cancel() {
-                getStudents(false);
-            }
-        });
-
-        FragmentTransaction fTrans = getSupportFragmentManager().beginTransaction();
-        fTrans.replace(R.id.fragmentView, fragment);
-        fTrans.commit();
-    }
-
-    private void viewStudent(Student student) {
-        ViewStudentFragment fragment = ViewStudentFragment.newInstance(student);
-        fragment.show(getSupportFragmentManager(), "dialog");
-    }
-
-    private void saveStudent(Student student) {
-        mSaveTask = new SaveTask();
-        mSaveTask.execute(student);
-    }
-
-    @Override
-    public Loader<ArrayList<Student>> onCreateLoader(int i, Bundle bundle) {
-        return new StudentsLoader(this);
-    }
-
-    @Override
-    public void onLoadFinished(Loader<ArrayList<Student>> loader, ArrayList<Student> students) {
-        StudentsFragment fragment = StudentsFragment.newInstance(students);
-
-        fragment.setStudentsListener(new StudentsFragment.StudentsListener() {
-            @Override
-            public void edit(Student student) {
-                editStudent(student);
-            }
-
-            @Override
-            public void view(Student student) {
-                viewStudent(student);
-            }
-        });
-
-        FragmentTransaction fTrans = getSupportFragmentManager().beginTransaction();
-        fTrans.replace(R.id.fragmentView, fragment);
-        fTrans.commit();
-
-        if (mDialog != null && mDialog.isShowing()) {
-            mDialog.dismiss();
-        }
-    }
-
-    @Override
-    public void onLoaderReset(Loader<ArrayList<Student>> loader) {
-
-    }
-
-    class SaveTask extends AsyncTask<Student, Void, Boolean> {
-
-        private ProgressDialog mDialog;
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-
-            mDialog = new ProgressDialog(MainActivity.this);
-            mDialog.setMessage("Wait...");
-            mDialog.setCancelable(false);
-            mDialog.show();
+            view.validate();
         }
 
-        @Override
-        protected Boolean doInBackground(Student... params) {
-            Boolean result = false;
+        return result;
+    }
 
-            try {
-                Student student = params[0];
+    private ArrayList<RequiredEditText> getViewsForvalidate(ViewGroup root) {
+        ArrayList<RequiredEditText> views = new ArrayList<>();
+        final int childCount = root.getChildCount();
 
-                DataBaseHelper helper = new DataBaseHelper(MainActivity.this);
-                result = helper.saveStudent(student);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            return result;
-        }
+        for (int i = 0; i < childCount; i++) {
+            final View child = root.getChildAt(i);
 
-        @Override
-        protected void onPostExecute(Boolean result) {
-            super.onPostExecute(result);
+            if (child instanceof ViewGroup) {
+                views.addAll(getViewsForvalidate((ViewGroup) child));
+            } else if (child instanceof RequiredEditText) {
+                RequiredEditText view = (RequiredEditText) child;
 
-            if (mDialog != null && mDialog.isShowing()) {
-                mDialog.dismiss();
-            }
-
-            if (result) {
-                getStudents(true);
-            } else {
-                Toast.makeText(MainActivity.this, "Error saving student", Toast.LENGTH_LONG).show();
+                if (view.getRequired() && view.getVisibility() == View.VISIBLE) {
+                    views.add(view);
+                }
             }
         }
+
+        return views;
     }
 }
